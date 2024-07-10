@@ -43,6 +43,8 @@
 #include "instance/instance.hpp"
 #include "mac/mac_frame.hpp"
 
+#include "wake-on-rf/magic_packet.h"
+
 #if OPENTHREAD_RADIO || OPENTHREAD_CONFIG_LINK_RAW_ENABLE
 
 namespace ot {
@@ -135,6 +137,8 @@ void NcpBase::LinkRawReceiveDone(otRadioFrame *aFrame, otError aError)
     OT_ASSERT(aFrame->mIid < kSpinelHeaderMaxNumIID);
 
     header |= SPINEL_HEADER_IID(aFrame->mIid);
+
+    decodeMagicPacket(aFrame->mPsdu);
 
     // Append frame header
     SuccessOrExit(mEncoder.BeginFrame(header, SPINEL_CMD_PROP_VALUE_IS, SPINEL_PROP_STREAM_RAW));

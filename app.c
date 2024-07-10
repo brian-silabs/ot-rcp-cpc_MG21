@@ -27,6 +27,9 @@
 
 #include "reset_util.h"
 
+#include "wake-on-rf/magic_packet.h"
+#include "link.h"
+
 /**
  * This function initializes the NCP app.
  *
@@ -34,6 +37,8 @@
  *
  */
 extern void otAppNcpInit(otInstance *aInstance);
+
+static uint8_t *eventData;
 
 static otInstance* sInstance = NULL;
 
@@ -96,4 +101,34 @@ void app_exit(void)
     free(otInstanceBuffer);
 #endif
     // TO DO : pseudo reset?
+}
+
+MagicPacketError_t magicPacketCallback(MagicPacketCallbackEvent_t event, void *data)
+{
+  switch (event) {
+    case MAGIC_PACKET_EVENT_ENABLED:
+      if(NULL != data)
+      {
+        eventData = (uint8_t*)data;
+      }
+      break;
+    case MAGIC_PACKET_EVENT_DISABLED:
+      break;
+    case MAGIC_PACKET_EVENT_WAKE_RX:
+      if(NULL != data)
+      {
+        eventData = (uint8_t*)data;
+      }
+      break;
+    case MAGIC_PACKET_EVENT_TX:
+      if(NULL != data)
+      {
+        eventData = (uint8_t*)data;
+      }
+      break;
+    default:
+      break;
+  }
+
+  return MAGIC_PACKET_SUCCESS;
 }

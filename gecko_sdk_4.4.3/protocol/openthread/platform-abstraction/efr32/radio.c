@@ -94,6 +94,8 @@
 #include "sl_rail_util_ieee802154_fast_channel_switching_config.h"
 #endif // SL_CATALOG_RAIL_UTIL_IEEE802154_FAST_CHANNEL_SWITCHING_PRESENT
 
+#include "wake-on-rf/magic_packet.h"
+
 //------------------------------------------------------------------------------
 // Enums, macros and static variables
 
@@ -1465,6 +1467,14 @@ void otPlatRadioSetPanId(otInstance *aInstance, uint16_t aPanId)
     OT_ASSERT(panIndex != INVALID_VALUE);
     otLogInfoPlat("PANID=%X index=%u IID=%d", aPanId, panIndex, iid);
     utilsSoftSrcMatchSetPanId(iid, aPanId);
+
+    if(aPanId != 0xFFFF){
+      static MagicPacketEnablePayload_t enablePayload_g;
+      enablePayload_g.panId = aPanId;
+      enablePayload_g.channel = 0;
+      enablePayload_g.borderRouter = true;
+      enableMagicPacketFilter(&enablePayload_g);
+    }
 
     status = RAIL_IEEE802154_SetPanId(gRailHandle, aPanId, panIndex);
     OT_ASSERT(status == RAIL_STATUS_NO_ERROR);

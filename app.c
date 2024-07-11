@@ -28,7 +28,10 @@
 #include "reset_util.h"
 
 #include "wake-on-rf/magic_packet.h"
+
 #include "link.h"
+#include "gpiointerrupt.h"
+#include "em_gpio.h"
 
 /**
  * This function initializes the NCP app.
@@ -37,9 +40,7 @@
  *
  */
 extern void otAppNcpInit(otInstance *aInstance);
-
 static uint8_t *eventData;
-
 static otInstance* sInstance = NULL;
 
 otInstance *otGetInstance(void)
@@ -73,12 +74,35 @@ void sl_ot_ncp_init(void)
     otAppNcpInit(sInstance);
 }
 
+// Gpio callbacks called when pin interrupt was triggered.
+void gpioCallback(uint8_t intNo)
+{
+  MagicPacketPayload_t magicPayload;
+  magicPayload.frameCounter = 0;
+  magicPayload.timeToLive = MAGIC_PACKET_DEFAULT_TTL;
+  magicPayload.status = 1;
+
+  otRadioFrame *aFrame = otPlatRadioGetTransmitBuffer(sInstance);
+
+  createMagicPacket(0xFFFF, 0xFFFF, otLinkGetPanId(sInstance), aFrame->mPsdu, &magicPayload);
+  aFrame->mLength = MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH + CRC_802154_LENGTH;
+  aFrame->mChannel = otLinkGetChannel(sInstance);
+  otPlatRadioTransmit(sInstance, aFrame);
+}
+
 /**************************************************************************//**
  * Application Init.
  *****************************************************************************/
 
 void app_init(void)
 {
+    GPIO_PinModeSet(gpioPortD, 2, gpioModeInputPull, 1);
+    GPIOINT_Init();
+
+    // Register callback functions and enable interrupts
+    GPIOINT_CallbackRegister(2, gpioCallback);
+    GPIO_ExtIntConfig(gpioPortD, 2, 2, false, true, true);
+
     OT_SETUP_RESET_JUMP(argv);
 }
 

@@ -188,7 +188,7 @@
 // </e>
 // <e>  Link Raw Service
 #ifndef OPENTHREAD_CONFIG_LINK_RAW_ENABLE
-#define OPENTHREAD_CONFIG_LINK_RAW_ENABLE           0
+#define OPENTHREAD_CONFIG_LINK_RAW_ENABLE           1
 #endif
 // </e>
 // <e>  MAC Filter

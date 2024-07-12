@@ -30,8 +30,11 @@
 #include "wake-on-rf/magic_packet.h"
 
 #include "link.h"
+#include "link_raw.h"
+
 #include "gpiointerrupt.h"
 #include "em_gpio.h"
+#include "string.h"
 
 /**
  * This function initializes the NCP app.
@@ -40,8 +43,9 @@
  *
  */
 extern void otAppNcpInit(otInstance *aInstance);
-static uint8_t *eventData;
 static otInstance* sInstance = NULL;
+static MagicPacketPayload_t magicPayload_g;
+static bool sendRequested_g = false;
 
 otInstance *otGetInstance(void)
 {
@@ -77,17 +81,7 @@ void sl_ot_ncp_init(void)
 // Gpio callbacks called when pin interrupt was triggered.
 void gpioCallback(uint8_t intNo)
 {
-  MagicPacketPayload_t magicPayload;
-  magicPayload.frameCounter = 0;
-  magicPayload.timeToLive = MAGIC_PACKET_DEFAULT_TTL;
-  magicPayload.status = 1;
-
-  otRadioFrame *aFrame = otPlatRadioGetTransmitBuffer(sInstance);
-
-  createMagicPacket(0xFFFF, 0xFFFF, otLinkGetPanId(sInstance), aFrame->mPsdu, &magicPayload);
-  aFrame->mLength = MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH + CRC_802154_LENGTH;
-  aFrame->mChannel = otLinkGetChannel(sInstance);
-  otPlatRadioTransmit(sInstance, aFrame);
+  sendRequested_g = true;
 }
 
 /**************************************************************************//**
@@ -113,6 +107,14 @@ void app_process_action(void)
 {
     otTaskletsProcess(sInstance);
     otSysProcessDrivers(sInstance);
+
+    if(sendRequested_g && (!otLinkRawIsTransmittingOrScanning(sInstance))){
+      sendRequested_g = false;
+      magicPayload_g.frameCounter = 0;
+      magicPayload_g.timeToLive = MAGIC_PACKET_DEFAULT_TTL;
+      magicPayload_g.status = 1;
+      sendMagicPacket(&magicPayload_g);
+    }
 }
 
 /**************************************************************************//**
@@ -133,7 +135,6 @@ MagicPacketError_t magicPacketCallback(MagicPacketCallbackEvent_t event, void *d
     case MAGIC_PACKET_EVENT_ENABLED:
       if(NULL != data)
       {
-        eventData = (uint8_t*)data;
       }
       break;
     case MAGIC_PACKET_EVENT_DISABLED:
@@ -141,13 +142,17 @@ MagicPacketError_t magicPacketCallback(MagicPacketCallbackEvent_t event, void *d
     case MAGIC_PACKET_EVENT_WAKE_RX:
       if(NULL != data)
       {
-        eventData = (uint8_t*)data;
       }
       break;
     case MAGIC_PACKET_EVENT_TX:
       if(NULL != data)
       {
-        eventData = (uint8_t*)data;
+        otRadioFrame *aFrame = otLinkRawGetTransmitBuffer(sInstance);
+        aFrame->mLength = MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH + CRC_802154_LENGTH;
+        aFrame->mChannel = otLinkGetChannel(sInstance);
+        memcpy(aFrame->mPsdu, &((uint8_t *)data)[1], MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH);
+        otLinkRawTransmit(sInstance, NULL);
+        //otPlatRadioTransmit(sInstance, aFrame);
       }
       break;
     default:

@@ -681,6 +681,87 @@ otError otPlatRadioExtensionGetRadioCounters(efr32RadioCounters *aCounters);
 otError otPlatRadioExtensionClearRadioCounters(void);
 
 /**
+ * Get the current state of the Wireless Coexistence Optimization and Responsiveness
+ * Framework (WORF) module.
+ *
+ * @param[out] aWorfState  Pointer to a variable to store the current WORF state.
+ *
+ * @retval OT_ERROR_NONE             The WORF state was successfully obtained.
+ * @retval OT_ERROR_INVALID_ARGS     The @p aWorfState pointer is NULL.
+ * @retval OT_ERROR_NOT_IMPLEMENTED  The WORF module is not supported.
+ */
+otError otPlatRadioExtensionGetWorfState(uint8_t *aWorfState);
+
+/**
+ * Get the current WORF (Wireless Coexistence Optimization and Responsiveness Framework) options.
+ *
+ * @param[out] aWorfPanID       Pointer to a variable to store the current WORF PAN ID.
+ * @param[out] aWorfChannel     Pointer to a variable to store the current WORF channel.
+ * @param[out] aWorfOptionsMask Pointer to a variable to store the current WORF options mask.
+ *
+ * @retval OT_ERROR_NONE             The WORF options were successfully obtained.
+ * @retval OT_ERROR_INVALID_STATE    The WORF module is not initialized.
+ * @retval OT_ERROR_INVALID_ARGS     One or more of the output pointers are NULL.
+ * @retval OT_ERROR_NOT_IMPLEMENTED  The WORF module is not supported.
+ */
+otError otPlatRadioExtensionGetWorfOptions(uint16_t *aWorfPanID, uint8_t *aWorfChannel, uint8_t *aWorfOptionsMask);
+
+/**
+ * Get the current WORF (Wireless Coexistence Optimization and Responsiveness Framework) TX options.
+ *
+ * @param[out] aWorfTxFrameCounter  Pointer to a variable to store the current WORF TX frame counter.
+ * @param[out] aWorfTtl             Pointer to a variable to store the current WORF TX TTL (Time To Live).
+ * @param[out] aWorfTxOptionsMask   Pointer to a variable to store the current WORF TX options mask.
+ *
+ * @retval OT_ERROR_NONE             The WORF TX options were successfully obtained.
+ * @retval OT_ERROR_INVALID_STATE    The WORF module is not initialized.
+ * @retval OT_ERROR_INVALID_ARGS     One or more of the output pointers are NULL.
+ * @retval OT_ERROR_NOT_IMPLEMENTED  The WORF module is not supported.
+ */
+otError otPlatRadioExtensionGetWorfWakeTxOptions(uint8_t *aWorfTxFrameCounter, uint8_t *aWorfTtl, uint8_t *aWorfTxOptionsMask);
+
+/**
+ * Set the current state of the Wireless Coexistence Optimization and Responsiveness
+ * Framework (WORF) module.
+ *
+ * @param[in] aWorfState  The new WORF state to set.
+ *
+ * @retval OT_ERROR_NONE             The WORF state was successfully set.
+ * @retval OT_ERROR_NOT_IMPLEMENTED  The WORF module is not supported.
+ */
+otError otPlatRadioExtensionSetWorfState(uint8_t aWorfState);
+
+/**
+ * Set the current WORF (Wireless Coexistence Optimization and Responsiveness Framework) options.
+ * Call is always overriden by otPlatRadioSetPanId in this implementation due to 
+ *     if(aPanId != 0xFFFF){
+      static MagicPacketEnablePayload_t enablePayload_g;
+      enablePayload_g.panId = aPanId;
+      enablePayload_g.channel = 0;
+      enablePayload_g.borderRouter = true;
+      enableMagicPacketFilter(&enablePayload_g);
+    }
+ *
+ * @param[in] aWorfPanID       The new WORF PAN ID to set. Must be aligned with OT Pan ID to work correctly.
+ * @param[in] aWorfChannel     The new WORF channel to set, overriden by OT Channel anyway.
+ * @param[in] aWorfOptionsMask The new WORF options mask to set.
+ *
+ * @retval OT_ERROR_NONE             The WORF options were successfully set.
+ * @retval OT_ERROR_NOT_IMPLEMENTED  The WORF module is not supported.
+ */
+otError otPlatRadioExtensionSetWorfOptions(uint16_t aWorfPanID, uint8_t aWorfChannel, uint8_t aWorfOptionsMask);
+
+/**
+ * Set the current WORF (Wireless Coexistence Optimization and Responsiveness Framework) TX options.
+ *
+ * This function sets the current WORF TX options, including the TX frame counter, TTL, and options mask.
+ *
+ * @retval OT_ERROR_NONE             The WORF TX options were successfully set.
+ * @retval MAGIC_PACKET_ERROR        Any error code from the worf module.
+ */
+otError otPlatRadioExtensionSetWorfWakeTx(void);
+
+/**
  * @}
  *
  */

@@ -36,64 +36,84 @@
 
 #include "lib/spinel/spinel.h"
 
-namespace ot {
-namespace Spinel {
-namespace Vendor {
-
-enum
+namespace ot
 {
-    SPINEL_PROP_VENDOR_ANTENNA = (SPINEL_PROP_VENDOR__BEGIN + 0),
-    SPINEL_PROP_VENDOR_COEX    = (SPINEL_PROP_VENDOR__BEGIN + 1),
-    SPINEL_PROP_VENDOR_TEST    = (SPINEL_PROP_VENDOR__BEGIN + 2),
-    SPINEL_PROP_VENDOR_EFR32   = (SPINEL_PROP_VENDOR__BEGIN + 3),
-};
-} // namespace Vendor
-} // namespace Spinel
+    namespace Spinel
+    {
+        namespace Vendor
+        {
 
-namespace Vendor {
-namespace Antenna {
-enum
-{
-    ANT_TX_MODE_COMMAND,
-    ANT_RX_MODE_COMMAND,
-    ANT_ACTIVE_PHY_COMMAND,
-};
+            enum
+            {
+                SPINEL_PROP_VENDOR_ANTENNA = (SPINEL_PROP_VENDOR__BEGIN + 0),
+                SPINEL_PROP_VENDOR_COEX = (SPINEL_PROP_VENDOR__BEGIN + 1),
+                SPINEL_PROP_VENDOR_TEST = (SPINEL_PROP_VENDOR__BEGIN + 2),
+                SPINEL_PROP_VENDOR_EFR32 = (SPINEL_PROP_VENDOR__BEGIN + 3),
+            };
+        } // namespace Vendor
+    } // namespace Spinel
 
-} // namespace Antenna
+    namespace Vendor
+    {
+        namespace Antenna
+        {
+            enum
+            {
+                ANT_TX_MODE_COMMAND,
+                ANT_RX_MODE_COMMAND,
+                ANT_ACTIVE_PHY_COMMAND,
+            };
 
-namespace Coex {
-enum
-{
-    COEX_DP_STATE_COMMAND,
-    COEX_GPIO_INPUT_OVERRIDE_COMMAND,
-    COEX_ACTIVE_RADIO_COMMAND,
-    COEX_PHY_SELECT_TIMEOUT_COMMAND,
-    COEX_PTA_OPTIONS_COMMAND,
-    COEX_CONSTANT_OPTIONS_COMMAND,
-    COEX_PTA_STATE_COMMAND,
-    COEX_PWM_STATE_COMMAND,
-    COEX_COUNTERS_COMMAND,
-    COEX_RADIO_HOLDOFF_COMMAND,
-};
+        } // namespace Antenna
 
-} // namespace Coex
+        namespace Coex
+        {
+            enum
+            {
+                COEX_DP_STATE_COMMAND,
+                COEX_GPIO_INPUT_OVERRIDE_COMMAND,
+                COEX_ACTIVE_RADIO_COMMAND,
+                COEX_PHY_SELECT_TIMEOUT_COMMAND,
+                COEX_PTA_OPTIONS_COMMAND,
+                COEX_CONSTANT_OPTIONS_COMMAND,
+                COEX_PTA_STATE_COMMAND,
+                COEX_PWM_STATE_COMMAND,
+                COEX_COUNTERS_COMMAND,
+                COEX_RADIO_HOLDOFF_COMMAND,
+            };
 
-namespace Test {
-enum
-{
-    GEN_PTI_RADIO_CONFIG_COMMAND,
-    GEN_CCA_MODE_COMMAND,
-};
+        } // namespace Coex
 
-} // namespace Test
+        namespace Test
+        {
+            enum
+            {
+                GEN_PTI_RADIO_CONFIG_COMMAND,
+                GEN_CCA_MODE_COMMAND,
+            };
 
-namespace Efr32 {
-enum
-{
-    EFR32_RADIO_COUNTERS_COMMAND,
-};
+        } // namespace Test
 
-} // namespace Efr32
-} // namespace Vendor
+        namespace Efr32
+        {
+            enum
+            {
+                EFR32_RADIO_COUNTERS_COMMAND,
+            };
+
+        } // namespace Efr32
+
+        namespace Worf
+        {
+            enum
+            {
+                WORF_STATE_COMMAND,
+                WORF_OPTIONS_COMMAND,
+                WORF_WAKE_TX_OPTIONS_COMMAND,
+                WORF_WAKE_TX_COMMAND,
+            };
+        } // namespace Worf
+
+    } // namespace Vendor
 } // namespace ot
 #endif // _NCP_SPINEL_HPP

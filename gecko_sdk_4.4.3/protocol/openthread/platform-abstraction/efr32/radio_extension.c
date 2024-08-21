@@ -67,6 +67,10 @@
 
 #endif // SL_CATALOG_OT_SIMULATION_PRESENT
 
+#ifdef SL_CATALOG_WORF_PRESENT
+#include "wake-on-rf/magic_packet.h"
+#endif // SL_CATALOG_WORF_PRESENT
+
 #include "common/code_utils.hpp"
 
 #ifdef SL_CATALOG_OPENTHREAD_ANT_DIV_PRESENT
@@ -521,3 +525,159 @@ otError otPlatRadioExtensionClearRadioCounters(void)
 }
 
 #endif // SL_CATALOG_OPENTHREAD_EFR32_EXT_PRESENT
+
+otError otPlatRadioExtensionGetWorfState(uint8_t *aWorfState)
+{
+    otError error = OT_ERROR_NONE;
+
+#ifdef SL_CATALOG_WORF_PRESENT
+    VerifyOrExit(aWorfState != NULL, error = OT_ERROR_INVALID_ARGS);
+    *aWorfState = (uint8_t)isMagicPacketFilterEnabled();
+#else
+    OT_UNUSED_VARIABLE(aWorfState);
+    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
+#endif
+
+exit:
+    return error;
+}
+
+otError otPlatRadioExtensionGetWorfOptions(uint16_t *aWorfPanID, uint8_t *aWorfChannel, uint8_t *aWorfOptionsMask)
+{
+    otError error = OT_ERROR_NONE;
+
+#ifdef SL_CATALOG_WORF_PRESENT
+    VerifyOrExit(aWorfPanID != NULL, error = OT_ERROR_INVALID_ARGS);
+    VerifyOrExit(aWorfChannel != NULL, error = OT_ERROR_INVALID_ARGS);
+    VerifyOrExit(aWorfOptionsMask != NULL, error = OT_ERROR_INVALID_ARGS);
+    
+    MagicPacketEnablePayload_t aWorfOptions;//TODO: Check persistence after function call in pointers
+
+    if(isMagicPacketFilterEnabled())
+    {
+        getMagicPacketFilterOptions(&aWorfOptions);
+
+        *aWorfPanID = aWorfOptions.panId;
+        *aWorfChannel = aWorfOptions.channel;
+        *aWorfOptionsMask = aWorfOptions.optionsMask;
+    } else 
+    {
+        error = OT_ERROR_INVALID_STATE;
+    }
+#else
+    OT_UNUSED_VARIABLE(aWorfPanID);
+    OT_UNUSED_VARIABLE(aWorfChannel);
+    OT_UNUSED_VARIABLE(aWorfOptionsMask);
+    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
+#endif
+
+exit:
+    return error;
+}
+
+otError otPlatRadioExtensionGetWorfWakeTxOptions(uint8_t *aWorfTxFrameCounter, uint8_t *aWorfTtl, uint8_t *aWorfTxOptionsMask)
+{
+    otError error = OT_ERROR_NONE;
+
+#ifdef SL_CATALOG_WORF_PRESENT
+    VerifyOrExit(aWorfTxFrameCounter != NULL, error = OT_ERROR_INVALID_ARGS);
+    VerifyOrExit(aWorfTtl != NULL, error = OT_ERROR_INVALID_ARGS);
+    VerifyOrExit(aWorfOptionsMask != NULL, error = OT_ERROR_INVALID_ARGS);
+    
+    MagicPacketPayload_t aWorfTxOptions;
+
+    if(isMagicPacketFilterEnabled())
+    {
+        getMagicPacketFilterWakeTxOptions(&aWorfTxOptions);
+    } else 
+    {
+        error = OT_ERROR_INVALID_STATE;
+    }
+#else
+    OT_UNUSED_VARIABLE(aWorfTxFrameCounter);
+    OT_UNUSED_VARIABLE(aWorfTtl);
+    OT_UNUSED_VARIABLE(aWorfTxOptionsMask);
+    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
+#endif
+
+exit:
+    return error;
+}
+
+otError otPlatRadioExtensionSetWorfState(uint8_t aWorfState)
+{
+    otError error = OT_ERROR_NONE;
+
+#ifdef SL_CATALOG_WORF_PRESENT
+    if(aWorfState)
+    {
+        MagicPacketEnablePayload_t enablePayload;
+
+        enablePayload.panId = 0xFFFF;
+        enablePayload.channel = 0x0B;
+        enablePayload.borderRouter = 0;
+
+        enableMagicPacketFilter(&enablePayload);
+        sl_status_t status = sl_rail_util_coex_set_directional_priority_pulse_width(aDpPulse);
+        VerifyOrExit(status == SL_STATUS_OK, error = OT_ERROR_FAILED);
+    } else 
+    {
+        disableMagicPacketFilter();
+    }
+#else
+    OT_UNUSED_VARIABLE(aWorfState);
+    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
+#endif
+
+exit:
+    return error;
+}
+
+otError otPlatRadioExtensionSetWorfOptions(uint16_t aWorfPanID, uint8_t aWorfChannel, uint8_t aWorfOptionsMask)
+{
+    otError error = OT_ERROR_NONE;
+
+#ifdef SL_CATALOG_WORF_PRESENT
+    VerifyOrExit(((aWorfChannel >= 0x0B) &&  (aWorfChannel <= 0x0B)), error = OT_ERROR_INVALID_ARGS);
+    
+    MagicPacketEnablePayload_t worfOptions;//TODO: Check persistence after function call in pointers
+
+    if(isMagicPacketFilterEnabled())
+    {
+        disableMagicPacketFilter();
+    }
+
+    worfOptions.panId = aWorfPanID;
+    worfOptions.channel = aWorfChannel;
+    worfOptions.optionsMask = aWorfOptionsMask;
+    
+    enableMagicPacketFilter(&enablePayload);
+#else
+    OT_UNUSED_VARIABLE(aWorfPanID);
+    OT_UNUSED_VARIABLE(aWorfChannel);
+    OT_UNUSED_VARIABLE(aWorfOptionsMask);
+    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
+#endif
+
+exit:
+    return error;
+}
+
+otError otPlatRadioExtensionSetWorfWakeTx(void)
+{
+    otError error = OT_ERROR_NONE;
+
+#ifdef SL_CATALOG_WORF_PRESENT
+    if(!otLinkRawIsTransmittingOrScanning(sInstance)){
+      magicPayload_g.frameCounter = 0;
+      magicPayload_g.timeToLive = MAGIC_PACKET_DEFAULT_TTL;
+      magicPayload_g.status = 1;
+      error = sendMagicPacket(&magicPayload_g));
+    }
+#else
+    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
+#endif
+
+exit:
+    return error;
+}

@@ -31,7 +31,7 @@
  * @brief This file contains definitions for a spinel extension to support wake on rf commands.
  */
 
-#include "ncp_coex.hpp"
+#include "ncp_worf.hpp"
 #include "vendor_spinel.hpp"
 #include "radio_extension.h"
 
@@ -56,7 +56,7 @@ namespace ot
 
                 static otError getWorfWakeTxOptions(Spinel::Encoder &aEncoder);
 
-                static otError setWorfWakeTx(Spinel::Decoder &aDecoder);
+                static otError setWorfWakeTx(void);
 
                 otError getWorfProperty(Spinel::Decoder &aDecoder, Spinel::Encoder &aEncoder)
                 {
@@ -98,7 +98,7 @@ namespace ot
                         error = setWorfOptions(aDecoder);
                         break;
                     case WorfCmd::WORF_WAKE_TX_COMMAND:
-                        error = setWorfWakeTx(aDecoder);
+                        error = setWorfWakeTx();
                         break;
                     }
 
@@ -120,10 +120,17 @@ namespace ot
                     uint16_t worfPanId = 0;
                     uint8_t worfChannel = 0;
                     uint8_t worfOptionsMask = 0;
+                    otError error = OT_ERROR_NONE;
 
                     IgnoreError(otPlatRadioExtensionGetWorfOptions(&worfPanId, &worfChannel, &worfOptionsMask));
 
-                    return (aEncoder.WriteUint8(dpPulse)); // TODO
+                    SuccessOrExit(error = aEncoder.WriteUint16(worfPanId));
+                    SuccessOrExit(error = aEncoder.WriteUint8(worfChannel));
+                    SuccessOrExit(error = aEncoder.WriteUint8(worfOptionsMask));
+
+                    exit:
+                        return error;
+
                 }
 
                 otError getWorfWakeTxOptions(Spinel::Encoder &aEncoder)
@@ -131,10 +138,16 @@ namespace ot
                     uint8_t worfTxFrameCounter = 0;
                     uint8_t worfTxTtl = 0;
                     uint8_t aWorfTxOptionsMask = 0;
+                    otError error = OT_ERROR_NONE;
 
                     IgnoreError(otPlatRadioExtensionGetWorfWakeTxOptions(&worfTxFrameCounter, &worfTxTtl, &aWorfTxOptionsMask));
 
-                    return (aEncoder.WriteUint8(dpPulse)); // TODO
+                    SuccessOrExit(error = aEncoder.WriteUint8(worfTxFrameCounter));
+                    SuccessOrExit(error = aEncoder.WriteUint8(worfTxTtl));
+                    SuccessOrExit(error = aEncoder.WriteUint8(aWorfTxOptionsMask));
+
+                    exit:
+                        return error;
                 }
 
                 otError setWorfState(Spinel::Decoder &aDecoder)
@@ -157,7 +170,9 @@ namespace ot
                     uint8_t worfOptionsMask = 0;
                     otError error = OT_ERROR_NONE;
 
-                    SuccessOrExit(error = aDecoder.ReadUint8(dpPulse)); // TODO
+                    SuccessOrExit(error = aDecoder.ReadUint16(worfPanId));
+                    SuccessOrExit(error = aDecoder.ReadUint8(worfChannel));
+                    SuccessOrExit(error = aDecoder.ReadUint8(worfOptionsMask));
 
                     error = otPlatRadioExtensionSetWorfOptions(worfPanId, worfChannel, worfOptionsMask);
 
@@ -165,13 +180,12 @@ namespace ot
                     return error;
                 }
 
-                otError setWorfWakeTx(Spinel::Decoder &aDecoder)
+                otError setWorfWakeTx(void)
                 {
                     otError error = OT_ERROR_NONE;
 
                     error = otPlatRadioExtensionSetWorfWakeTx();
 
-                exit:
                     return error;
                 }
 

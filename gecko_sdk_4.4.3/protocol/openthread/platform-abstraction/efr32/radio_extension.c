@@ -551,15 +551,15 @@ otError otPlatRadioExtensionGetWorfOptions(uint16_t *aWorfPanID, uint8_t *aWorfC
     VerifyOrExit(aWorfChannel != NULL, error = OT_ERROR_INVALID_ARGS);
     VerifyOrExit(aWorfOptionsMask != NULL, error = OT_ERROR_INVALID_ARGS);
     
-    MagicPacketEnablePayload_t aWorfOptions;//TODO: Check persistence after function call in pointers
+    MagicPacketEnablePayload_t worfOptions;
 
     if(isMagicPacketFilterEnabled())
     {
-        getMagicPacketFilterOptions(&aWorfOptions);
+        getMagicPacketFilterOptions(&worfOptions);
 
-        *aWorfPanID = aWorfOptions.panId;
-        *aWorfChannel = aWorfOptions.channel;
-        *aWorfOptionsMask = aWorfOptions.optionsMask;
+        *aWorfPanID = worfOptions.panId;
+        *aWorfChannel = worfOptions.channel;
+        *aWorfOptionsMask = worfOptions.borderRouter;
     } else 
     {
         error = OT_ERROR_INVALID_STATE;
@@ -582,13 +582,18 @@ otError otPlatRadioExtensionGetWorfWakeTxOptions(uint8_t *aWorfTxFrameCounter, u
 #ifdef SL_CATALOG_WORF_PRESENT
     VerifyOrExit(aWorfTxFrameCounter != NULL, error = OT_ERROR_INVALID_ARGS);
     VerifyOrExit(aWorfTtl != NULL, error = OT_ERROR_INVALID_ARGS);
-    VerifyOrExit(aWorfOptionsMask != NULL, error = OT_ERROR_INVALID_ARGS);
+    VerifyOrExit(aWorfTxOptionsMask != NULL, error = OT_ERROR_INVALID_ARGS);
     
-    MagicPacketPayload_t aWorfTxOptions;
+    MagicPacketPayload_t worfTxOptions;
 
     if(isMagicPacketFilterEnabled())
     {
-        getMagicPacketFilterWakeTxOptions(&aWorfTxOptions);
+        getMagicPacketFilterWakeTxOptions(&worfTxOptions);
+
+        *aWorfTxFrameCounter = worfTxOptions.frameCounter;
+        *aWorfTtl = worfTxOptions.timeToLive;
+        *aWorfTxOptionsMask = worfTxOptions.status;
+
     } else 
     {
         error = OT_ERROR_INVALID_STATE;
@@ -618,18 +623,14 @@ otError otPlatRadioExtensionSetWorfState(uint8_t aWorfState)
         enablePayload.borderRouter = 0;
 
         enableMagicPacketFilter(&enablePayload);
-        sl_status_t status = sl_rail_util_coex_set_directional_priority_pulse_width(aDpPulse);
-        VerifyOrExit(status == SL_STATUS_OK, error = OT_ERROR_FAILED);
     } else 
     {
         disableMagicPacketFilter();
     }
 #else
     OT_UNUSED_VARIABLE(aWorfState);
-    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
+    error = OT_ERROR_NOT_IMPLEMENTED;
 #endif
-
-exit:
     return error;
 }
 
@@ -638,7 +639,7 @@ otError otPlatRadioExtensionSetWorfOptions(uint16_t aWorfPanID, uint8_t aWorfCha
     otError error = OT_ERROR_NONE;
 
 #ifdef SL_CATALOG_WORF_PRESENT
-    VerifyOrExit(((aWorfChannel >= 0x0B) &&  (aWorfChannel <= 0x0B)), error = OT_ERROR_INVALID_ARGS);
+    VerifyOrExit(((aWorfChannel >= 0x0B) &&  (aWorfChannel <= 0x1A)), error = OT_ERROR_INVALID_ARGS);
     
     MagicPacketEnablePayload_t worfOptions;//TODO: Check persistence after function call in pointers
 
@@ -649,9 +650,9 @@ otError otPlatRadioExtensionSetWorfOptions(uint16_t aWorfPanID, uint8_t aWorfCha
 
     worfOptions.panId = aWorfPanID;
     worfOptions.channel = aWorfChannel;
-    worfOptions.optionsMask = aWorfOptionsMask;
+    worfOptions.borderRouter = aWorfOptionsMask;
     
-    enableMagicPacketFilter(&enablePayload);
+    enableMagicPacketFilter(&worfOptions);
 #else
     OT_UNUSED_VARIABLE(aWorfPanID);
     OT_UNUSED_VARIABLE(aWorfChannel);
@@ -668,16 +669,14 @@ otError otPlatRadioExtensionSetWorfWakeTx(void)
     otError error = OT_ERROR_NONE;
 
 #ifdef SL_CATALOG_WORF_PRESENT
-    if(!otLinkRawIsTransmittingOrScanning(sInstance)){
-      magicPayload_g.frameCounter = 0;
-      magicPayload_g.timeToLive = MAGIC_PACKET_DEFAULT_TTL;
-      magicPayload_g.status = 1;
-      error = sendMagicPacket(&magicPayload_g));
-    }
-#else
-    ExitNow(error = OT_ERROR_NOT_IMPLEMENTED);
-#endif
+    MagicPacketPayload_t worfTxPayload;
 
-exit:
+    worfTxPayload.frameCounter = 0;
+    worfTxPayload.timeToLive = MAGIC_PACKET_DEFAULT_TTL;
+    worfTxPayload.status = 1;
+    error = (otError)sendMagicPacket(&worfTxPayload);
+#else
+    error = OT_ERROR_NOT_IMPLEMENTED;
+#endif
     return error;
 }

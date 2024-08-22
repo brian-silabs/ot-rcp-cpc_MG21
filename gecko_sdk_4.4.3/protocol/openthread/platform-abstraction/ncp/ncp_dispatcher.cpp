@@ -54,6 +54,10 @@
 #include "ncp_efr32.hpp"
 #endif // SL_CATALOG_OPENTHREAD_EFR32_CLI_PRESENT
 
+#ifdef SL_CATALOG_WORF_PRESENT
+#include "ncp_worf.hpp"
+#endif // SL_CATALOG_WORF_PRESENT
+
 #if OPENTHREAD_ENABLE_NCP_VENDOR_HOOK
 
 namespace SpinelProp    = ot::Spinel::Vendor;
@@ -130,6 +134,13 @@ otError NcpBase::VendorGetPropertyHandler(spinel_prop_key_t aPropKey)
         error = Vendor::Efr32::getEfr32Property(mDecoder, mEncoder);
         break;
     #endif // SL_CATALOG_OPENTHREAD_EFR32_CLI_PRESENT
+
+    #ifdef SL_CATALOG_WORF_PRESENT
+    case SpinelProp::SPINEL_PROP_VENDOR_WORF:
+        error = Vendor::Worf::getWorfProperty(mDecoder, mEncoder);
+        break;
+    #endif // SL_CATALOG_WORF_PRESENT
+
     default:
         error = OT_ERROR_NOT_FOUND;
         break;
@@ -180,6 +191,13 @@ otError NcpBase::VendorSetPropertyHandler(spinel_prop_key_t aPropKey)
         error = Vendor::Efr32::setEfr32Property(mDecoder);
         break;
     #endif // SL_CATALOG_OPENTHREAD_EFR32_CLI_PRESENT
+
+    #ifdef SL_CATALOG_WORF_PRESENT
+    case SpinelProp::SPINEL_PROP_VENDOR_WORF:
+        error = Vendor::Worf::setWorfProperty(mDecoder);
+        break;
+    #endif // SL_CATALOG_WORF_PRESENT
+
     default:
         error = OT_ERROR_NOT_FOUND;
         break;

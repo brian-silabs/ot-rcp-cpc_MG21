@@ -151,7 +151,10 @@ MagicPacketError_t magicPacketCallback(MagicPacketCallbackEvent_t event, void *d
         aFrame->mLength = MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH + CRC_802154_LENGTH;
         aFrame->mChannel = otLinkGetChannel(sInstance);
         memcpy(aFrame->mPsdu, &((uint8_t *)data)[1], MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH);
-        otLinkRawTransmit(sInstance, NULL);
+
+        if((!otLinkRawIsTransmittingOrScanning(sInstance))){
+            otLinkRawTransmit(sInstance, NULL);
+        }
         //otPlatRadioTransmit(sInstance, aFrame);
       }
       break;

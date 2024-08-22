@@ -49,6 +49,7 @@ namespace ot
                 SPINEL_PROP_VENDOR_COEX = (SPINEL_PROP_VENDOR__BEGIN + 1),
                 SPINEL_PROP_VENDOR_TEST = (SPINEL_PROP_VENDOR__BEGIN + 2),
                 SPINEL_PROP_VENDOR_EFR32 = (SPINEL_PROP_VENDOR__BEGIN + 3),
+                SPINEL_PROP_VENDOR_WORF = (SPINEL_PROP_VENDOR__BEGIN + 4),
             };
         } // namespace Vendor
     } // namespace Spinel

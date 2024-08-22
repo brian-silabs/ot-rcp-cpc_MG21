@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "__locale": "cpp",
+        "sl_rail_util_ieee802154_phy_select.h": "c",
+        "radio_extension.h": "c"
+    }
+}

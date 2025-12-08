@@ -46,9 +46,6 @@
 
 #include "wake-on-rf/magic_packet.h"
 
-#include "link.h"
-#include "link_raw.h"
-
 #include "gpiointerrupt.h"
 #include "em_gpio.h"
 #include "string.h"
@@ -127,6 +124,12 @@ void sl_ot_ncp_init(void)
 #endif
 }
 
+// Gpio callbacks called when pin interrupt was triggered.
+void gpioCallback(uint8_t intNo)
+{
+  sendRequested_g = true;
+}
+
 /******************************************************************************
  * Application Init.
  *****************************************************************************/
@@ -160,7 +163,7 @@ void app_process_action(void)
     otTaskletsProcess(sInstance);
     otSysProcessDrivers(sInstance);
 
-    if(sendRequested_g && (!otLinkRawIsTransmittingOrScanning(sInstance))){
+    if(sendRequested_g){
       sendRequested_g = false;
       magicPayload_g.frameCounter = 0;
       magicPayload_g.timeToLive = MAGIC_PACKET_DEFAULT_TTL;
@@ -199,15 +202,15 @@ MagicPacketError_t magicPacketCallback(MagicPacketCallbackEvent_t event, void *d
     case MAGIC_PACKET_EVENT_TX:
       if(NULL != data)
       {
-        otRadioFrame *aFrame = otLinkRawGetTransmitBuffer(sInstance);
-        aFrame->mLength = MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH + CRC_802154_LENGTH;
-        aFrame->mChannel = otLinkGetChannel(sInstance);
-        memcpy(aFrame->mPsdu, &((uint8_t *)data)[1], MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH);
-
-        if((!otLinkRawIsTransmittingOrScanning(sInstance))){
-            otLinkRawTransmit(sInstance, NULL);
-        }
-        //otPlatRadioTransmit(sInstance, aFrame);
+        // Get the tx frame and send it without csma.
+        otRadioFrame *aTxFrame                   = otPlatRadioGetTransmitBuffer(sInstance);
+        aTxFrame->mInfo.mTxInfo.mCsmaCaEnabled   = false;
+        aTxFrame->mInfo.mTxInfo.mMaxCsmaBackoffs = 0;
+        aTxFrame->mLength = MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH + CRC_802154_LENGTH;
+        aTxFrame->mChannel = otLinkGetChannel(sInstance);
+        memcpy(aTxFrame->mPsdu, &((uint8_t *)data)[1], MAGIC_PACKET_PAYLOAD_LENGTH + HEADER_802154_LENGTH);
+        // On successful transmit, this will call the transmit complete callback for the WORF packet
+        otPlatRadioTransmit(sInstance, aTxFrame);
       }
       break;
     default:

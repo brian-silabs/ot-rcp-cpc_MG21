@@ -98,19 +98,19 @@ namespace ot
             {
                 EFR32_RADIO_COUNTERS_COMMAND,
             };
-
-            namespace Worf
-            {
-                enum
-                {
-                    WORF_STATE_COMMAND,
-                    WORF_OPTIONS_COMMAND,
-                    WORF_WAKE_TX_OPTIONS_COMMAND,
-                    WORF_WAKE_TX_COMMAND,
-                };
-            } // namespace Worf
-
         } // namespace Efr32
+
+        namespace Worf
+        {
+            enum
+            {
+                WORF_STATE_COMMAND,
+                WORF_OPTIONS_COMMAND,
+                WORF_WAKE_TX_OPTIONS_COMMAND,
+                WORF_WAKE_TX_COMMAND,
+            };
+        } // namespace Worf
+
     } // namespace Vendor
 } // namespace ot
 #endif // _NCP_SPINEL_HPP

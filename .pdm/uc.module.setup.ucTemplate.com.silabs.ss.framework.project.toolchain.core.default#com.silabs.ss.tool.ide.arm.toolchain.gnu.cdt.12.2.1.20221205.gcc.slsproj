@@ -5,8 +5,9 @@
     <file name="sl_application_type.h" builtin="true" generated="true"/>
     <file name="RTE_Components.h" builtin="true" generated="true"/>
     <file name="sl_component_catalog.h" builtin="true" generated="true"/>
+    <file name="sl_cpc_instance_handles.h" builtin="true" generated="true"/>
+    <file name="sl_cpc_instance_handles.c" builtin="true" generated="true"/>
     <file name="sl_cpc_drv_uart_config.h" builtin="true" generated="true"/>
-    <file name="sl_device_init_clocks.c" builtin="true" generated="true"/>
     <file name="sl_event_handler.h" builtin="true" generated="true"/>
     <file name="sl_event_handler.c" builtin="true" generated="true"/>
     <file name="sli_mbedtls_config_autogen.h" builtin="true" generated="true"/>

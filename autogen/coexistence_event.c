@@ -30,10 +30,15 @@
 
 #include "coexistence.h"
 #include "coexistence-802154.h"
+#include "coexistence-ot.h"
 
 void COEX_on_event(COEX_Events_t events)
 {
+  (void) events;
   if ((sli_rail_util_ieee802154_coex_event_filter & events) != 0U) {
     sli_rail_util_ieee802154_coex_on_event(sli_rail_util_ieee802154_coex_event_filter & events);
+  }
+  if ((sli_rail_util_ot_coex_state_event_filter & events) != 0U) {
+    sli_rail_util_ot_coex_state_on_event(sli_rail_util_ot_coex_state_event_filter & events);
   }
 }

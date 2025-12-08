@@ -35,6 +35,11 @@
 
 // <h>CPC Configuration
 
+// <q SL_CPC_USE_PRE_HASHED_CRC_TABLE> Use a lookup table to speedup CRC calculation
+// <i> Default: 0
+// <i> Enabling this features speeds up the CRC computation at the cost of using an additional 512 (256 x sizeof uint16_t) bytes or memory for the LUT
+#define SL_CPC_USE_PRE_HASHED_CRC_TABLE  0
+
 // <o SL_CPC_RX_PAYLOAD_MAX_LENGTH>Max Rx Payload Length<1-4087>
 // <i> Default: 256
 // <i> Maximum size of the payload in bytes of each RX buffer
@@ -50,11 +55,6 @@
 // <i> Total number of CPC RX buffers available across all endpoints
 // <i> Multiple RX buffers can be associated with a single endpoint
 #define SL_CPC_RX_BUFFER_MAX_COUNT        (20)
-
-// <o SL_CPC_USER_ENDPOINT_MAX_COUNT>Max Number of User Endpoints<0-10>
-// <i> Default: 1
-// <i> Maximum number of CPC user endpoints that can be opened at once.
-#define SL_CPC_USER_ENDPOINT_MAX_COUNT    (1)
 
 // <q SL_CPC_DEBUG_SYSTEM_VIEW_LOG_CORE_EVENT> Enable debug core tracing with system view
 // <i> Default: 0

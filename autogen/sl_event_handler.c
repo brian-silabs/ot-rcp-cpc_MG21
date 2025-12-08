@@ -1,13 +1,7 @@
 #include "sl_event_handler.h"
 
-#include "em_chip.h"
-#include "sl_device_init_nvic.h"
 #include "sl_board_init.h"
-#include "sl_device_init_lfxo.h"
-#include "sl_device_init_hfrco.h"
-#include "sl_device_init_hfxo.h"
-#include "sl_device_init_clocks.h"
-#include "sl_device_init_emu.h"
+#include "sl_clock_manager.h"
 #include "sl_rail_util_dma.h"
 #include "pa_conversions_efr32.h"
 #include "sl_rail_util_pti.h"
@@ -16,38 +10,54 @@
 #include "btl_interface.h"
 #include "sl_board_control.h"
 #include "platform-efr32.h"
-#include "sl_sleeptimer.h"
 #include "sl_cpc.h"
 #include "sl_debug_swo.h"
+#include "sl_gpio.h"
 #include "gpiointerrupt.h"
 #include "sl_mbedtls.h"
-#include "sl_mpu.h"
-#include "nvm3_default.h"
 #include "crash_handler.h"
 #include "sl_ot_init.h"
 #include "psa/crypto.h"
+#include "sl_se_manager.h"
 #include "sli_protocol_crypto.h"
+#include "nvm3_default.h"
 #include "sl_cos.h"
+
+void sli_driver_permanent_allocation(void)
+{
+}
+
+void sli_service_permanent_allocation(void)
+{
+  sl_cpc_init_permanent_allocations();
+}
+
+void sli_stack_permanent_allocation(void)
+{
+}
+
+void sli_internal_permanent_allocation(void)
+{
+}
 
 void sl_platform_init(void)
 {
-  CHIP_Init();
-  sl_device_init_nvic();
   sl_board_preinit();
-  sl_device_init_lfxo();
-  sl_device_init_hfrco();
-  sl_device_init_hfxo();
-  sl_device_init_clocks();
-  sl_device_init_emu();
+  sl_clock_manager_runtime_init();
   sl_board_init();
   bootloader_init();
-  nvm3_initDefault();
   sl_ot_crash_handler_init();
+  nvm3_initDefault();
+}
+
+void sli_internal_init_early(void)
+{
 }
 
 void sl_driver_init(void)
 {
   sl_debug_swo_init();
+  sl_gpio_init();
   GPIOINT_Init();
   sl_cos_send_config();
 }
@@ -55,11 +65,11 @@ void sl_driver_init(void)
 void sl_service_init(void)
 {
   sl_board_configure_vcom();
-  sl_sleeptimer_init();
   sl_cpc_init();
   sl_mbedtls_init();
-  sl_mpu_disable_execute_from_ram();
   psa_crypto_init();
+  sl_se_init();
+  sli_protocol_crypto_init();
   sli_aes_seed_mask();
 }
 
@@ -78,20 +88,20 @@ void sl_internal_app_init(void)
   sl_ot_init();
 }
 
-void sl_platform_process_action(void)
+void sli_platform_process_action(void)
 {
 }
 
-void sl_service_process_action(void)
+void sli_service_process_action(void)
 {
   sl_cpc_process_action();
 }
 
-void sl_stack_process_action(void)
+void sli_stack_process_action(void)
 {
 }
 
-void sl_internal_app_process_action(void)
+void sli_internal_app_process_action(void)
 {
 }
 

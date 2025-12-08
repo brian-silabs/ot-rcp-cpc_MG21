@@ -69,6 +69,10 @@
 
 #include "common/code_utils.hpp"
 
+#ifdef SL_CATALOG_WORF_PRESENT
+#include "wake-on-rf/magic_packet.h"
+#endif // SL_CATALOG_WORF_PRESENT
+
 #ifdef SL_CATALOG_OPENTHREAD_ANT_DIV_PRESENT
 otError otPlatRadioExtensionGetTxAntennaMode(uint8_t *aMode)
 {
